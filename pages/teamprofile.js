@@ -7,66 +7,45 @@ import { useEffect } from "react";
 const TeamMember = () => {
     const router = useRouter();
     const { name } = router.query;
-    const member = memberData.find((m) => m[name]);
+
+    const member = name ? memberData.find((m) => m[name]) : null;
 
     const details = member ? member[name] : {};
-    const githubUsername = details.GitHub
-        ? details.GitHub.split("/").pop()
-        : "";
+    const githubUsername = details.GitHub ? details.GitHub.split("/").pop() : "";
 
-    useEffect(() => {   // to embed topmate widget link
-        if (details.TopmateService) {
-            const script = document.createElement("script");
-            script.src =
-                "https://topmate-embed.s3.ap-south-1.amazonaws.com/v1/topmate-embed.js";
-            script.async = true;
-            script.defer = true;
+    useEffect(() => {
+        const buttonId = 'topmate-mentorship-button'; 
 
-            const isMobile = window.innerWidth <= 640; // Mobile screen (640px and below)
-            const isMedium = window.innerWidth > 640 && window.innerWidth <= 1024; // Medium screen (between 640px and 1024px)
+        if (member && details.TopmateService) {
 
-            let positionRight = "80px";
-            let positionBottom = "30px";
-            let fontSize = "16px";
-            let customWidth = "160px";
+            if (!document.getElementById(buttonId)) {
 
-            if (isMobile) {
-                positionRight = "5px";
-                positionBottom = "5px";
-                fontSize = "14px";
-                customWidth = "140px";
-            } else if (isMedium) {
-                positionRight = "60px";
-                positionBottom = "40px";
-                fontSize = "15px";
-                customWidth = "150px";
+                const button = document.createElement("a");
+                button.id = buttonId;
+                button.href = `${details.TopmateService}`;  
+                button.textContent = "1:1 Mentorship";
+                button.style.position = "fixed";
+                button.style.right = "30px";
+                button.style.bottom = "30px";
+                button.style.backgroundColor = "#000";
+                button.style.color = "#fff";
+                button.style.padding = "10px 20px";
+                button.style.borderRadius = "5px";
+                button.style.zIndex = "1000"; 
+
+                
+                document.body.appendChild(button);
             }
-
-            script.setAttribute(
-                "user-profile",
-                `${details.TopmateService}?embed=true&theme=F97316`
-            );
-            script.setAttribute(
-                "btn-style",
-                '{"backgroundColor":"#000","color":"#fff","border":"1px solid #000"}'
-            );
-            script.setAttribute("embed-version", "v1");
-            script.setAttribute("button-text", "1:1 Mentorship");
-            script.setAttribute("position-right", positionRight);
-            script.setAttribute("position-bottom", positionBottom);
-            script.setAttribute("custom-padding", "0px");
-            script.setAttribute("custom-font-size", fontSize);
-            script.setAttribute("custom-font-weight", "500");
-            script.setAttribute("custom-width", customWidth);
-
-            document.body.appendChild(script);
-            return () => {
-                if(script)
-                    document.body.removeChild(script);
-            };
         }
-    }, [details.TopmateService, router.query]);
 
+        return () => {
+            const existingButton = document.getElementById(buttonId);
+            if (existingButton) {
+                document.body.removeChild(existingButton);
+            }
+        };
+    }, [details.TopmateService, member]);
+    
     if (!member) {
         return (
             <div className="flex flex-col items-center justify-center min-h-72 p-4 dark:text-white">
